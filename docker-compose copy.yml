@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: todo_db
+    platform: linux/amd64
+    volumes:
+      - ./data:/var/lib/mysql
+    ports:
+    - 3306:3306
+    environment:
+    - MYSQL_ROOT_PASSWORD=password
+    - MYSQL_DATABASE=golang_api
+  api:
+    image: hoangtv2506a/todo_app_golang_aws-api
+    container_name: 'golang-apis'
+    restart: always
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    ports:
+    - "8080:8080"
+    volumes:
+    - .:/app/
+    depends_on:
+      - db
+    command: ["./wait-for-it.sh", "db:3306", "--timeout=60", "--", "./main"]
+  frondend:
+    image: hoangtv2506a/todo_reactjs
+    container_name: todo_reactjs
+    restart: always
+    ports:
+    - "3000:3000"
+    depends_on:
+      - db
